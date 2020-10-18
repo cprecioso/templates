@@ -7,7 +7,7 @@ import path from "path"
 
 const addToGitIgnore = async (cwd: string, entries: string[]) => {
   const file = path.resolve(cwd, ".gitignore")
-  await fs.appendFile(file, entries.join("\n"))
+  await fs.appendFile(file, `\n` + entries.join("\n") + "\n")
 }
 
 void (async () => {
@@ -65,29 +65,13 @@ void (async () => {
   })
 
   if (enablePnp) {
-    await addToGitIgnore(cwd, [
-      ".yarn/*",
-      "!.yarn/releases",
-      "!.yarn/plugins",
-      "!.yarn/sdks",
-      "!.yarn/versions",
-      ".pnp.*",
-    ])
+    await addToGitIgnore(cwd, [".pnp.*"])
   } else {
-    await addToGitIgnore(cwd, ["node_modules"])
     await fs.appendFile(
       path.resolve(cwd, ".yarnrc.yml"),
-      "\n\nnodeLinker: node-modules\n\n"
+      "\nnodeLinker: node-modules\n"
     )
   }
-
-  await addToGitIgnore(cwd, [
-    ".yarn/*",
-    "!.yarn/releases",
-    "!.yarn/plugins",
-    "!.yarn/sdks",
-    "!.yarn/versions",
-  ])
 
   await execa("yarn", { stdout: "inherit", cwd })
   await execa("yarn", ["up", "-C", "**"], { stdout: "inherit", cwd })

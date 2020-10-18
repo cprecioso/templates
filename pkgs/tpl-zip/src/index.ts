@@ -30,6 +30,7 @@ export const synthesizeTemplates = async (
       for await (const file of globby.stream("**/*", {
         cwd,
         absolute: true,
+        gitignore: true,
       })) {
         files.push({
           fileName: path.relative(cwd, file as string),

@@ -1,0 +1,9 @@
+{
+  "extends": "@cprecioso/tsconfig/node",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "sourceMap": true
+  },
+  "include": ["src/**/*", "types/**/*"]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@template/library",
+  "version": "0.0.1",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -cw",
+    "prepack": "yarn run build",
+    "prepublishOnly": "yarn run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@cprecioso/tsconfig": "*",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@types/node": "*",
+    "@wessberg/rollup-plugin-ts": "*",
+    "rollup": "*",
+    "typescript": "*"
+  },
+  "peerDependencies": {}
+}

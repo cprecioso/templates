@@ -1,0 +1,21 @@
+{
+  "name": "@template/script",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "bin": "lib/index.js",
+  "devDependencies": {
+    "@cprecioso/tsconfig": "*",
+    "@types/node": "*",
+    "prettier": "*",
+    "typescript": "*"
+  },
+  "files": [
+    "lib/**"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "prepack": "yarn run build",
+    "prepublishOnly": "yarn run build",
+    "dev": "tsc -p . -w"
+  }
+}

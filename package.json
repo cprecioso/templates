@@ -1,0 +1,14 @@
+{
+  "name": "@cprecioso/templates-umbrella",
+  "version": "0.0.1",
+  "workspaces": [
+    "tpls/*",
+    "pkgs/*"
+  ],
+  "devDependencies": {
+    "@cprecioso/tsconfig": "^1.0.0",
+    "prettier": "^2.1.2",
+    "typescript": "^4.0.3"
+  },
+  "private": true
+}

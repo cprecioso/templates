@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "tsc -p .",
+    "clean": "del-cli lib",
     "dev": "tsc -p . -w",
     "prepack": "yarn run build",
     "prepublishOnly": "yarn run build"
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@cprecioso/tsconfig": "*",
     "@types/node": "*",
+    "del-cli": "^3.0.1",
     "prettier": "*",
     "typescript": "*"
   }

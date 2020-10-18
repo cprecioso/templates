@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "clean": "del-cli dist",
     "dev": "rollup -cw",
     "prepack": "yarn run build",
     "prepublishOnly": "yarn run build"
@@ -25,6 +26,7 @@
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/node": "*",
     "@wessberg/rollup-plugin-ts": "*",
+    "del-cli": "^3.0.1",
     "rollup": "*",
     "typescript": "*"
   }

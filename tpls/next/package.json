@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "next build",
+    "clean": "del-cli .next",
     "dev": "next",
     "start": "next start"
   },
@@ -16,6 +17,7 @@
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
+    "del-cli": "^3.0.1",
     "prettier": "*",
     "typescript": "*"
   }

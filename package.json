@@ -6,6 +6,12 @@
     "tpls/*",
     "pkgs/*"
   ],
+  "scripts": {
+    "build": "yarn workspaces foreach -Apiv --topological-dev --exclude '@template/*' run build",
+    "clean": "yarn workspaces foreach -Apiv run clean",
+    "format": "yarn workspaces foreach -Apiv exec sort-package-json; prettier --write './**/*' '!.yarn/**/*'",
+    "publish": "yarn workspace @cprecioso/template exec npm publish"
+  },
   "devDependencies": {
     "@cprecioso/tsconfig": "^1.0.0",
     "prettier": "^2.1.2",

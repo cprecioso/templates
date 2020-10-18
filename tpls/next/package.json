@@ -1,0 +1,22 @@
+{
+  "name": "@template/next",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "next build",
+    "dev": "next",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "*",
+    "react": "*",
+    "react-dom": "*"
+  },
+  "devDependencies": {
+    "@cprecioso/tsconfig": "*",
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "prettier": "*",
+    "typescript": "*"
+  }
+}

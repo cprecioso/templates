@@ -29,14 +29,11 @@ void (async () => {
   const { templateName } = await inquirer.prompt({
     name: "templateName",
     type: "list",
-    choices: templates.map((tpl) => tpl.templateName),
+    choices: Object.keys(templates),
   })
 
   const working1 = (async () => {
-    await unsynthesizeTemplate(
-      cwd,
-      templates.find((tpl) => tpl.templateName === templateName)!
-    )
+    await unsynthesizeTemplate(cwd, await templates[templateName]())
 
     const pkg = JSON.parse(
       await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")

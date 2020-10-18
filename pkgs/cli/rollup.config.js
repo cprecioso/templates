@@ -14,15 +14,31 @@ const r = (...args) =>
     String.raw(...args)
   ))
 
-export default (async () =>
-  /** @type {import("rollup").RollupOptions} */ ({
+export default (async () => /** @type {import("rollup").RollupOptions} */ {
+  const templates = await synthesizeTemplates(__dirname)
+
+  return /** @type {import("rollup").RollupOptions} */ ({
     input: r`src/index.ts`,
-    output: { file: "dist/index.mjs", format: "esm" },
+    output: {
+      dir: "dist",
+      format: "esm",
+      entryFileNames: "[name].mjs",
+      chunkFileNames: "template-[name].mjs",
+    },
     plugins: [
       virtual({
-        "@template/all": `export default (${JSON.stringify(
-          await synthesizeTemplates(__dirname)
-        )});`,
+        ...Object.fromEntries(
+          templates.map((template) => [
+            `@template/${template.templateName}`,
+            `export default (${JSON.stringify(template)});`,
+          ])
+        ),
+        "@template/all": `export default ({${templates
+          .map(
+            (template) =>
+              `${template.templateName}: async () => (await import("@template/${template.templateName}")).default`
+          )
+          .join(", ")}});`,
       }),
       nodeResolve({ modulesOnly: true }),
       ts({ typescript: require("typescript") }),
@@ -34,4 +50,5 @@ export default (async () =>
     treeshake: {
       moduleSideEffects: "no-external",
     },
-  }))()
+  })
+})()

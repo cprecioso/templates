@@ -3,19 +3,19 @@
   "version": "0.0.1",
   "main": "lib/index.js",
   "bin": "lib/index.js",
-  "devDependencies": {
-    "@cprecioso/tsconfig": "*",
-    "@types/node": "*",
-    "prettier": "*",
-    "typescript": "*"
-  },
   "files": [
     "lib/**"
   ],
   "scripts": {
     "build": "tsc -p .",
+    "dev": "tsc -p . -w",
     "prepack": "yarn run build",
-    "prepublishOnly": "yarn run build",
-    "dev": "tsc -p . -w"
+    "prepublishOnly": "yarn run build"
+  },
+  "devDependencies": {
+    "@cprecioso/tsconfig": "*",
+    "@types/node": "*",
+    "prettier": "*",
+    "typescript": "*"
   }
 }

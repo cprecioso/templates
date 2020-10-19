@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { unsynthesizeTemplate } from "@pkg/tpl-zip"
 import templates from "@template/all"
 import execa from "execa"

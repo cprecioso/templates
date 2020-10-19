@@ -1564,6 +1564,7 @@ __metadata:
     execa: ^4.0.3
     inquirer: ^7.3.3
     rollup: ^2.30.0
+    rollup-plugin-preserve-shebang: ^1.0.1
     typescript: ^4.0.3
   bin:
     template: dist/index.mjs
@@ -7738,6 +7739,15 @@ fsevents@~2.1.2:
     hash-base: ^3.0.0
     inherits: ^2.0.1
   checksum: e0370fbe779b1f15d74c3e7dffc0ce40b57b845fc7e431fab8a571958d5fd9c91eb0038a252604600e20786d117badea0cc4cf8816b8a6be6b9166b565ad6797
+  languageName: node
+  linkType: hard
+
+"rollup-plugin-preserve-shebang@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "rollup-plugin-preserve-shebang@npm:1.0.1"
+  dependencies:
+    magic-string: ^0.25.7
+  checksum: 859de353d0fcac3bcaa5ba5801042037fde49051ee21fedf85b43a7f39ef2125d76dce9f1579a22f6c19649105053f33c7007ef989193c0fc857490f8687a231
   languageName: node
   linkType: hard
 

@@ -17,14 +17,12 @@ void (async () => {
     default: process.cwd(),
   })
 
-  const { packageName } = await inquirer.prompt([
-    {
-      name: "packageName",
-      type: "input",
-      transformer: (t: string) => t.toLowerCase(),
-      default: path.basename(cwd),
-    },
-  ])
+  const { packageName } = await inquirer.prompt({
+    name: "packageName",
+    type: "input",
+    transformer: (t: string) => t.toLowerCase(),
+    default: path.basename(cwd),
+  })
 
   const { templateName } = await inquirer.prompt({
     name: "templateName",
@@ -45,13 +43,11 @@ void (async () => {
     )
   })()
 
-  const { enablePnp } = await inquirer.prompt([
-    {
-      name: "enablePnp",
-      type: "confirm",
-      default: false,
-    },
-  ])
+  const { enablePnp } = await inquirer.prompt({
+    name: "enablePnp",
+    type: "confirm",
+    default: false,
+  })
 
   await working1
 

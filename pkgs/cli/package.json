@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "sideEffects": false,
   "type": "module",
-  "main": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "bin": "dist/index.mjs",
   "files": [
     "dist/**"

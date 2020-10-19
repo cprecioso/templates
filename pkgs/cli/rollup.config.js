@@ -6,6 +6,7 @@ import virtual from "@rollup/plugin-virtual"
 import ts from "@wessberg/rollup-plugin-ts"
 import path from "path"
 import shebang from "rollup-plugin-preserve-shebang"
+import { terser } from "rollup-plugin-terser"
 import pkg from "./package.json"
 
 /** @type {(template: TemplateStringsArray, ...substitutions: any[]) => import("@yarnpkg/fslib").PortablePath} */
@@ -44,6 +45,7 @@ export default (async () => /** @type {import("rollup").RollupOptions} */ {
       }),
       nodeResolve({ modulesOnly: true }),
       ts({ typescript: require("typescript") }),
+      terser(),
     ],
     external: [
       ...require("module").builtinModules,

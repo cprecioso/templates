@@ -1567,7 +1567,7 @@ __metadata:
     rollup-plugin-preserve-shebang: ^1.0.1
     typescript: ^4.0.3
   bin:
-    template: dist/index.mjs
+    template: dist/index.js
   languageName: unknown
   linkType: soft
 

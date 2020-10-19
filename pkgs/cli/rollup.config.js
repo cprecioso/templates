@@ -22,9 +22,9 @@ export default (async () => /** @type {import("rollup").RollupOptions} */ {
     input: r`src/index.ts`,
     output: {
       dir: "dist",
-      format: "esm",
-      entryFileNames: "[name].mjs",
-      chunkFileNames: "template-[name].mjs",
+      format: "cjs",
+      entryFileNames: "[name].js",
+      chunkFileNames: "template-[name].js",
     },
     plugins: [
       shebang(),

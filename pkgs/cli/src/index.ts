@@ -2,6 +2,7 @@
 
 import { unsynthesizeTemplate } from "@pkg/tpl-zip"
 import templates from "@template/all"
+import chalk from "chalk"
 import execa from "execa"
 import fs from "fs/promises"
 import inquirer from "inquirer"
@@ -16,13 +17,18 @@ void (async () => {
   const { cwd } = await inquirer.prompt({
     name: "cwd",
     type: "input",
-    default: process.cwd(),
+    transformer: (p: string) =>
+      path.isAbsolute(p)
+        ? p
+        : chalk`{dim (${path.resolve(process.cwd(), p)})} ${p}`,
+    filter: (p: string) => path.resolve(process.cwd(), p),
   })
 
   const { packageName } = await inquirer.prompt({
     name: "packageName",
     type: "input",
     transformer: (t: string) => t.toLowerCase(),
+    filter: (t: string) => t.toLowerCase(),
     default: path.basename(cwd),
   })
 

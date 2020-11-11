@@ -38,47 +38,79 @@ void (async () => {
     choices: Object.keys(templates),
   })
 
-  const working1 = (async () => {
-    await unsynthesizeTemplate(cwd, await templates[templateName]())
+  const status = (s: string) => process.stdout.write(s + "... ")
+  const done = () => process.stdout.write(chalk`{green.dim Done!}\n`)
 
-    const pkg = JSON.parse(
-      await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")
-    )
-    pkg.name = packageName
+  status("Unpacking template")
+  await unsynthesizeTemplate(cwd, await templates[templateName]())
+  done()
+
+  status("Adapting template to project")
+  const pkg = JSON.parse(
+    await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")
+  )
+  pkg.name = packageName
+
+  status("Adding code formatters")
+  {
+    /** Add prettier and precommit hooks */
+    Object.assign((pkg.devDependencies ||= {}), {
+      prettier: "*",
+      "pretty-quick": "*",
+      husky: "*",
+      "sort-package-json": "*",
+    })
+    ;((pkg.husky ||= {}).hooks ||= {})["pre-commit"] = "yarn run format"
+    ;(pkg.scripts ||= {}).format = "sort-package-json; pretty-quick --staged"
+
     await fs.writeFile(
-      path.resolve(cwd, "package.json"),
-      JSON.stringify(pkg, null, 2)
-    )
-  })()
-
-  const { enablePnp } = await inquirer.prompt({
-    name: "enablePnp",
-    type: "confirm",
-    default: false,
-  })
-
-  await working1
-
-  await execa("yarn", ["set", "version", "berry"], {
-    stdout: "inherit",
-    cwd,
-  })
-  await execa("yarn", ["plugin", "import", "typescript"], {
-    stdout: "inherit",
-    cwd,
-  })
-
-  if (enablePnp) {
-    await addToGitIgnore(cwd, [".pnp.*"])
-  } else {
-    await fs.appendFile(
-      path.resolve(cwd, ".yarnrc.yml"),
-      "\nnodeLinker: node-modules\n"
+      path.resolve(cwd, ".prettierrc"),
+      JSON.stringify({ semi: false }, null, 2)
     )
   }
 
+  await fs.writeFile(
+    path.resolve(cwd, "package.json"),
+    JSON.stringify(pkg, null, 2)
+  )
+  done()
+
+  console.log("Installing yarn")
+  await execa("yarn", ["set", "version", "berry", "--only-if-needed"], {
+    stdout: "inherit",
+    cwd,
+  })
+
+  console.log("Importing typescript plugin")
+  const hasTypeScriptPlugin = (
+    await execa("yarn", ["plugin", "runtime", "--json"], { cwd })
+  ).stdout
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line.trim()))
+    .some((plugin) => plugin.name === "@yarnpkg/plugin-typescript")
+
+  if (!hasTypeScriptPlugin) {
+    await execa("yarn", ["plugin", "import", "typescript"], {
+      stdout: "inherit",
+      cwd,
+    })
+  }
+
+  console.log("Setting up node-modules linker")
+  await execa("yarn", ["config", "set", "nodeLinker", "node-modules"], {
+    stdout: "inherit",
+    cwd,
+  })
+
+  console.log("Installing dependencies")
   await execa("yarn", { stdout: "inherit", cwd })
+
+  console.log("Persisting ranges")
   await execa("yarn", ["up", "-C", "**"], { stdout: "inherit", cwd })
+
+  console.log("Formatting")
+  await execa("yarn", ["run", "format"], { stdout: "inherit", cwd })
 
   console.log("Done")
 })().catch((err) => console.error(err))

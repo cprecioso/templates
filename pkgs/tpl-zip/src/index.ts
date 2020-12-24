@@ -38,6 +38,11 @@ export const synthesizeTemplates = async (
         })
       }
 
+      files.push({
+        fileName: ".gitignore",
+        contents: await fs.readFile(path.resolve(cwd, ".gitignore"), ENCODING),
+      })
+
       return { templateName, files }
     })
   )

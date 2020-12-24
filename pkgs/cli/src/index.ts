@@ -6,12 +6,8 @@ import chalk from "chalk"
 import execa from "execa"
 import fs from "fs/promises"
 import inquirer from "inquirer"
+import Listr from "listr"
 import path from "path"
-
-const addToGitIgnore = async (cwd: string, entries: string[]) => {
-  const file = path.resolve(cwd, ".gitignore")
-  await fs.appendFile(file, `\n` + entries.join("\n") + "\n")
-}
 
 void (async () => {
   const { cwd } = await inquirer.prompt({
@@ -24,35 +20,36 @@ void (async () => {
     filter: (p: string) => path.resolve(process.cwd(), p),
   })
 
-  const { packageName } = await inquirer.prompt({
+  const { packageName, templateName } = await inquirer.prompt([
+    {
     name: "packageName",
     type: "input",
     transformer: (t: string) => t.toLowerCase(),
     filter: (t: string) => t.toLowerCase(),
     default: path.basename(cwd),
-  })
-
-  const { templateName } = await inquirer.prompt({
+    },
+    {
     name: "templateName",
     type: "list",
     choices: Object.keys(templates),
-  })
+    },
+  ])
 
-  const status = (s: string) => process.stdout.write(s + "... ")
-  const done = () => process.stdout.write(chalk`{green.dim Done!}\n`)
-
-  status("Unpacking template")
-  await unsynthesizeTemplate(cwd, await templates[templateName]())
-  done()
-
-  status("Adapting template to project")
+  await new Listr([
+    {
+      title: "Unpacking template",
+      task: async () =>
+        unsynthesizeTemplate(cwd, await templates[templateName]()),
+    },
+    {
+      title: "Adapting template to project",
+      task: async () => {
   const pkg = JSON.parse(
     await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")
   )
+
   pkg.name = packageName
 
-  status("Adding code formatters")
-  {
     /** Add prettier and precommit hooks */
     Object.assign((pkg.devDependencies ||= {}), {
       prettier: "*",
@@ -61,56 +58,86 @@ void (async () => {
       "sort-package-json": "*",
     })
     ;((pkg.husky ||= {}).hooks ||= {})["pre-commit"] = "yarn run format"
-    ;(pkg.scripts ||= {}).format = "sort-package-json; pretty-quick --staged"
+        ;(pkg.scripts ||= {}).format =
+          "sort-package-json; pretty-quick --staged"
 
-    await fs.writeFile(
+        await Promise.all([
+          fs.writeFile(
       path.resolve(cwd, ".prettierrc"),
       JSON.stringify({ semi: false }, null, 2)
-    )
-  }
-
-  await fs.writeFile(
+          ),
+          fs.writeFile(
     path.resolve(cwd, "package.json"),
     JSON.stringify(pkg, null, 2)
-  )
-  done()
-
-  console.log("Installing yarn")
-  await execa("yarn", ["set", "version", "berry", "--only-if-needed"], {
-    stdout: "inherit",
+          ),
+        ])
+      },
+    },
+    {
+      title: "Installing yarn",
+      task: () =>
+        execa("yarn", ["set", "version", "berry", "--only-if-needed"], { cwd }),
+    },
+    {
+      title: "Setting up yarn",
+      task: () =>
+        new Listr(
+          [
+            {
+              title: "Importing typescript plugin",
+              task: () =>
+                new Listr([
+                  {
+                    title: "Checking if already installed",
+                    task: async (ctx) => {
+                      const hasTypeScriptPlugin = (
+                        await execa("yarn", ["plugin", "runtime", "--json"], {
     cwd,
   })
-
-  console.log("Importing typescript plugin")
-  const hasTypeScriptPlugin = (
-    await execa("yarn", ["plugin", "runtime", "--json"], { cwd })
   ).stdout
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line.trim()))
-    .some((plugin) => plugin.name === "@yarnpkg/plugin-typescript")
+                        .some(
+                          (plugin) =>
+                            plugin.name === "@yarnpkg/plugin-typescript"
+                        )
 
-  if (!hasTypeScriptPlugin) {
-    await execa("yarn", ["plugin", "import", "typescript"], {
-      stdout: "inherit",
+                      ctx.disableNext = hasTypeScriptPlugin
+                    },
+                  },
+                  {
+                    title: "Installing typescript plugin",
+                    skip: (ctx) => ctx.disableNext,
+                    task: () =>
+                      execa("yarn", ["plugin", "import", "typescript"], {
       cwd,
-    })
-  }
-
-  console.log("Setting up node-modules linker")
-  await execa("yarn", ["config", "set", "nodeLinker", "node-modules"], {
-    stdout: "inherit",
+                      }),
+                  },
+                ]),
+            },
+            {
+              title: "Setting up node-modules linker",
+              task: () =>
+                execa("yarn", ["config", "set", "nodeLinker", "node-modules"], {
     cwd,
-  })
-
-  console.log("Installing dependencies")
-  await execa("yarn", { stdout: "inherit", cwd })
-
-  console.log("Persisting ranges")
-  await execa("yarn", ["up", "-C", "**"], { stdout: "inherit", cwd })
-
-  console.log("Formatting")
-  await execa("yarn", ["run", "format"], { stdout: "inherit", cwd })
-
-  console.log("Done")
+                }),
+            },
+          ],
+          { concurrent: true }
+        ),
+    },
+    {
+      title: "Installing dependencies",
+      task: () => execa("yarn", { cwd }),
+    },
+    {
+      title: "Persisting ranges",
+      task: () => execa("yarn", ["up", "-C", "**"], { cwd }),
+    },
+    {
+      title: "Formatting",
+      task: () => execa("yarn", ["run", "format"], { cwd }),
+    },
+  ]).run()
 })().catch((err) => console.error(err))

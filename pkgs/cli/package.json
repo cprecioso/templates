@@ -8,7 +8,7 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "yarn workspaces foreach -Rpiv --topological-dev run build && rollup -c",
     "clean": "del-cli dist",
     "dev": "rollup -cw",
     "prepack": "yarn run build",

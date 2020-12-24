@@ -22,16 +22,16 @@ void (async () => {
 
   const { packageName, templateName } = await inquirer.prompt([
     {
-    name: "packageName",
-    type: "input",
-    transformer: (t: string) => t.toLowerCase(),
-    filter: (t: string) => t.toLowerCase(),
-    default: path.basename(cwd),
+      name: "packageName",
+      type: "input",
+      transformer: (t: string) => t.toLowerCase(),
+      filter: (t: string) => t.toLowerCase(),
+      default: path.basename(cwd),
     },
     {
-    name: "templateName",
-    type: "list",
-    choices: Object.keys(templates),
+      name: "templateName",
+      type: "list",
+      choices: Object.keys(templates),
     },
   ])
 
@@ -44,31 +44,31 @@ void (async () => {
     {
       title: "Adapting template to project",
       task: async () => {
-  const pkg = JSON.parse(
-    await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")
-  )
+        const pkg = JSON.parse(
+          await fs.readFile(path.resolve(cwd, "package.json"), "utf-8")
+        )
 
-  pkg.name = packageName
+        pkg.name = packageName
 
-    /** Add prettier and precommit hooks */
-    Object.assign((pkg.devDependencies ||= {}), {
-      prettier: "*",
-      "pretty-quick": "*",
-      husky: "*",
-      "sort-package-json": "*",
-    })
-    ;((pkg.husky ||= {}).hooks ||= {})["pre-commit"] = "yarn run format"
+        /** Add prettier and precommit hooks */
+        Object.assign((pkg.devDependencies ||= {}), {
+          prettier: "*",
+          "pretty-quick": "*",
+          husky: "*",
+          "sort-package-json": "*",
+        })
+        ;((pkg.husky ||= {}).hooks ||= {})["pre-commit"] = "yarn run format"
         ;(pkg.scripts ||= {}).format =
           "sort-package-json; pretty-quick --staged"
 
         await Promise.all([
           fs.writeFile(
-      path.resolve(cwd, ".prettierrc"),
-      JSON.stringify({ semi: false }, null, 2)
+            path.resolve(cwd, ".prettierrc"),
+            JSON.stringify({ semi: false }, null, 2)
           ),
           fs.writeFile(
-    path.resolve(cwd, "package.json"),
-    JSON.stringify(pkg, null, 2)
+            path.resolve(cwd, "package.json"),
+            JSON.stringify(pkg, null, 2)
           ),
         ])
       },
@@ -92,12 +92,12 @@ void (async () => {
                     task: async (ctx) => {
                       const hasTypeScriptPlugin = (
                         await execa("yarn", ["plugin", "runtime", "--json"], {
-    cwd,
-  })
-  ).stdout
-    .trim()
-    .split("\n")
-    .map((line) => JSON.parse(line.trim()))
+                          cwd,
+                        })
+                      ).stdout
+                        .trim()
+                        .split("\n")
+                        .map((line) => JSON.parse(line.trim()))
                         .some(
                           (plugin) =>
                             plugin.name === "@yarnpkg/plugin-typescript"
@@ -111,7 +111,7 @@ void (async () => {
                     skip: (ctx) => ctx.disableNext,
                     task: () =>
                       execa("yarn", ["plugin", "import", "typescript"], {
-      cwd,
+                        cwd,
                       }),
                   },
                 ]),
@@ -120,7 +120,7 @@ void (async () => {
               title: "Setting up node-modules linker",
               task: () =>
                 execa("yarn", ["config", "set", "nodeLinker", "node-modules"], {
-    cwd,
+                  cwd,
                 }),
             },
           ],
@@ -135,9 +135,15 @@ void (async () => {
       title: "Persisting ranges",
       task: () => execa("yarn", ["up", "-C", "**"], { cwd }),
     },
+    { title: "Initializing git", task: () => execa("git", ["init"], { cwd }) },
     {
       title: "Formatting",
       task: () => execa("yarn", ["run", "format"], { cwd }),
+    },
+    { title: "Adding files", task: () => execa("git", ["add", "."], { cwd }) },
+    {
+      title: "Committing",
+      task: () => execa("git", ["commit", "-m", "Initial commit"], { cwd }),
     },
   ]).run()
 })().catch((err) => console.error(err))

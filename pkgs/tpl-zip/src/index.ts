@@ -1,4 +1,4 @@
-import yarn from "@yarnpkg/core"
+import * as yarn from "@yarnpkg/core"
 import type { PortablePath } from "@yarnpkg/fslib"
 import fs from "fs/promises"
 import globby from "globby"

@@ -15,6 +15,7 @@
     "prepublishOnly": "yarn run build"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "^1.1.0",
     "chalk": "^4.1.0",
     "execa": "^4.0.3",
     "inquirer": "^7.3.3",

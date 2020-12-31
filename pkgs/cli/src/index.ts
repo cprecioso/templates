@@ -2,32 +2,21 @@
 
 import { unsynthesizeTemplate } from "@pkg/tpl-zip"
 import templates from "@template/all"
-import chalk from "chalk"
 import execa from "execa"
 import fs from "fs/promises"
 import inquirer from "inquirer"
 import Listr from "listr"
 import path from "path"
+import { transformedInput } from "./input"
+import { resolvePkgName } from "./pkgName"
 
 void (async () => {
-  const { cwd } = await inquirer.prompt({
-    name: "cwd",
-    type: "input",
-    transformer: (p: string) =>
-      path.isAbsolute(p)
-        ? p
-        : chalk`{dim (${path.resolve(process.cwd(), p)})} ${p}`,
-    filter: (p: string) => path.resolve(process.cwd(), p),
-  })
+  const { cwd } = await inquirer.prompt(
+    transformedInput("cwd", path.resolve, process.cwd())
+  )
 
   const { packageName, templateName } = await inquirer.prompt([
-    {
-      name: "packageName",
-      type: "input",
-      transformer: (t: string) => t.toLowerCase(),
-      filter: (t: string) => t.toLowerCase(),
-      default: path.basename(cwd),
-    },
+    transformedInput("packageName", resolvePkgName, path.basename(cwd)),
     {
       name: "templateName",
       type: "list",

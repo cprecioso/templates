@@ -10,7 +10,8 @@
   "dependencies": {
     "next": "*",
     "react": "*",
-    "react-dom": "*"
+    "react-dom": "*",
+    "styled-jsx": "*"
   },
   "devDependencies": {
     "@cprecioso/tsconfig": "*",

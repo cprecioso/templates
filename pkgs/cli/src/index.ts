@@ -7,6 +7,7 @@ import fs from "fs/promises"
 import inquirer from "inquirer"
 import Listr from "listr"
 import path from "path"
+import semver from "semver"
 import { transformedInput } from "./input"
 import { resolvePkgName } from "./pkgName"
 
@@ -15,13 +16,14 @@ void (async () => {
     transformedInput("cwd", path.resolve, process.cwd())
   )
 
-  const { packageName, templateName } = await inquirer.prompt([
+  const { packageName, templateName, enablePnp } = await inquirer.prompt([
     transformedInput("packageName", resolvePkgName, path.basename(cwd)),
     {
       name: "templateName",
       type: "list",
       choices: Object.keys(templates),
     },
+    { name: "enablePnp", type: "confirm" },
   ])
 
   await new Listr([
@@ -106,11 +108,18 @@ void (async () => {
                 ]),
             },
             {
-              title: "Setting up node-modules linker",
+              title: "Setting up node linker",
               task: () =>
-                execa("yarn", ["config", "set", "nodeLinker", "node-modules"], {
-                  cwd,
-                }),
+                execa(
+                  "yarn",
+                  [
+                    "config",
+                    "set",
+                    "nodeLinker",
+                    enablePnp ? "pnp" : "node-modules",
+                  ],
+                  { cwd }
+                ),
             },
           ],
           { concurrent: true }

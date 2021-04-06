@@ -125,16 +125,32 @@ void (async () => {
             {
               title: "Setting up node linker",
               task: () =>
-                execa(
-                  "yarn",
-                  [
-                    "config",
-                    "set",
-                    "nodeLinker",
-                    enablePnp ? "pnp" : "node-modules",
-                  ],
-                  { cwd }
-                ),
+                new Listr([
+                  {
+                    title: "Configuring linker",
+                    task: () =>
+                      execa(
+                        "yarn",
+                        [
+                          "config",
+                          "set",
+                          "nodeLinker",
+                          enablePnp ? "pnp" : "node-modules",
+                        ],
+                        { cwd }
+                      ),
+                  },
+                  {
+                    title: "Setting up SDKs",
+                    skip: () => !enablePnp,
+                    task: () =>
+                      execa(
+                        "yarn",
+                        ["dlx", "@yarnpkg/pnpify", "--sdk", "vscode"],
+                        { cwd }
+                      ),
+                  },
+                ]),
             },
           ],
           { concurrent: true }

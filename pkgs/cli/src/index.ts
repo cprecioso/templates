@@ -8,6 +8,7 @@ import inquirer from "inquirer"
 import Listr from "listr"
 import path from "path"
 import semver from "semver"
+import type stream from "stream"
 import { transformedInput } from "./input"
 import { resolvePkgName } from "./pkgName"
 
@@ -25,6 +26,9 @@ void (async () => {
     },
     { name: "enablePnp", type: "confirm" },
   ])
+
+  const exec = (program: string, args: string[]) =>
+    execa(program, args, { cwd }).stdout as stream.Readable
 
   await new Listr([
     {
@@ -75,11 +79,11 @@ void (async () => {
         return new Listr([
           {
             title: "Downloading yarn",
-            task: () => execa("yarn", ["set", "version", "berry"], { cwd }),
+            task: () => exec("yarn", ["set", "version", "berry"]),
           },
           {
             title: "Persisting yarn",
-            task: () => execa("yarn", ["set", "version", "berry"], { cwd }),
+            task: () => exec("yarn", ["set", "version", "berry"]),
           },
         ])
       },
@@ -116,25 +120,19 @@ void (async () => {
                     title: "Installing typescript plugin",
                     skip: (ctx) => ctx.disableNext,
                     task: () =>
-                      execa("yarn", ["plugin", "import", "typescript"], {
-                        cwd,
-                      }),
+                      exec("yarn", ["plugin", "import", "typescript"]),
                   },
                 ]),
             },
             {
               title: "Setting up node linker",
               task: () =>
-                execa(
-                  "yarn",
-                  [
-                    "config",
-                    "set",
-                    "nodeLinker",
-                    enablePnp ? "pnp" : "node-modules",
-                  ],
-                  { cwd }
-                ),
+                exec("yarn", [
+                  "config",
+                  "set",
+                  "nodeLinker",
+                  enablePnp ? "pnp" : "node-modules",
+                ]),
             },
           ],
           { concurrent: true }
@@ -142,27 +140,26 @@ void (async () => {
     },
     {
       title: "Installing dependencies",
-      task: () => execa("yarn", { cwd }),
+      task: () => exec("yarn", []),
     },
     {
       title: "Persisting ranges",
-      task: () => execa("yarn", ["up", "-C", "**"], { cwd }),
+      task: () => exec("yarn", ["up", "-C", "**"]),
     },
     {
       title: "PnPifying SDKs",
       skip: () => !enablePnp,
-      task: () =>
-        execa("yarn", ["dlx", "@yarnpkg/pnpify", "--sdk", "vscode"], { cwd }),
+      task: () => exec("yarn", ["dlx", "@yarnpkg/pnpify", "--sdk", "vscode"]),
     },
-    { title: "Initializing git", task: () => execa("git", ["init"], { cwd }) },
+    { title: "Initializing git", task: () => exec("git", ["init"]) },
     {
       title: "Formatting",
-      task: () => execa("yarn", ["run", "format"], { cwd }),
+      task: () => exec("yarn", ["run", "format"]),
     },
-    { title: "Adding files", task: () => execa("git", ["add", "."], { cwd }) },
+    { title: "Adding files", task: () => exec("git", ["add", "."]) },
     {
       title: "Committing",
-      task: () => execa("git", ["commit", "-m", "Initial commit"], { cwd }),
+      task: () => exec("git", ["commit", "-m", "Initial commit"]),
     },
   ]).run()
 })().catch((err) => console.error(err))

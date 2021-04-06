@@ -125,32 +125,16 @@ void (async () => {
             {
               title: "Setting up node linker",
               task: () =>
-                new Listr([
-                  {
-                    title: "Configuring linker",
-                    task: () =>
-                      execa(
-                        "yarn",
-                        [
-                          "config",
-                          "set",
-                          "nodeLinker",
-                          enablePnp ? "pnp" : "node-modules",
-                        ],
-                        { cwd }
-                      ),
-                  },
-                  {
-                    title: "Setting up SDKs",
-                    skip: () => !enablePnp,
-                    task: () =>
-                      execa(
-                        "yarn",
-                        ["dlx", "@yarnpkg/pnpify", "--sdk", "vscode"],
-                        { cwd }
-                      ),
-                  },
-                ]),
+                execa(
+                  "yarn",
+                  [
+                    "config",
+                    "set",
+                    "nodeLinker",
+                    enablePnp ? "pnp" : "node-modules",
+                  ],
+                  { cwd }
+                ),
             },
           ],
           { concurrent: true }
@@ -163,6 +147,12 @@ void (async () => {
     {
       title: "Persisting ranges",
       task: () => execa("yarn", ["up", "-C", "**"], { cwd }),
+    },
+    {
+      title: "PnPifying SDKs",
+      skip: () => !enablePnp,
+      task: () =>
+        execa("yarn", ["dlx", "@yarnpkg/pnpify", "--sdk", "vscode"], { cwd }),
     },
     { title: "Initializing git", task: () => execa("git", ["init"], { cwd }) },
     {

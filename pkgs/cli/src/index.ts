@@ -66,8 +66,23 @@ void (async () => {
     },
     {
       title: "Installing yarn",
-      task: () =>
-        execa("yarn", ["set", "version", "berry", "--only-if-needed"], { cwd }),
+      skip: async () =>
+        semver.satisfies(
+          semver.coerce((await execa("yarn", ["--version"], { cwd })).stdout)!,
+          ">=2"
+        ),
+      task: () => {
+        return new Listr([
+          {
+            title: "Downloading yarn",
+            task: () => execa("yarn", ["set", "version", "berry"], { cwd }),
+          },
+          {
+            title: "Persisting yarn",
+            task: () => execa("yarn", ["set", "version", "berry"], { cwd }),
+          },
+        ])
+      },
     },
     {
       title: "Setting up yarn",
